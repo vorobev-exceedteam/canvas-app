@@ -6,6 +6,8 @@ const circl1 = new Path2D();
 circl1.arc(50, 40, 50, 0, 2 * Math.PI);
 const circl2 = new Path2D();
 circl2.arc(0, 0, 70, 0, 2 * Math.PI);
+const circl3 = new Path2D();
+circl3.arc(0, 0, 70, 0,  Math.PI);
 const eleps = new Path2D();
 eleps.ellipse(0, 0, 30, 70, Math.PI / 4, 0, 2 * Math.PI);
 const eleps2 = new Path2D();
@@ -15,9 +17,10 @@ const mockItems: CanvasItemModel[] = [
   new CanvasItemModel(rectang1, 0, 0, 'red'),
   new CanvasItemModel(circl1, 150, 150),
   new CanvasItemModel(circl2, 200, 350, 'green'),
-  new CanvasItemModel(circl1, 10, 410, 'blue'),
+  new CanvasItemModel(circl1, 500, 410, 'blue'),
   new CanvasItemModel(eleps, 400, 400, 'orange'),
-  new CanvasItemModel(eleps2, 500, 500, 'darkcyan')
+  new CanvasItemModel(eleps2, 500, 500, 'darkcyan'),
+  new CanvasItemModel(circl3, 600, 10, 'yellow')
 ];
 
 export default mockItems

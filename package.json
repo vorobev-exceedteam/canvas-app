@@ -10,6 +10,8 @@
     "@types/node": "^12.20.1",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.1",
+    "lodash.debounce": "^4.0.8",
+    "normalize.css": "^8.0.1",
     "prettier": "^2.2.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",

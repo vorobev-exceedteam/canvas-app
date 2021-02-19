@@ -8,6 +8,8 @@ import {
 import './styles.scss';
 import CanvasItemModel from '../models/CanvasItemModel';
 import CanvasItemHistory from '../models/CanvasItemHistory';
+import 'normalize.css';
+import debounce from '../utill/debounce';
 
 interface CanvasProps extends HTMLAttributes<HTMLCanvasElement> {
   items: CanvasItemModel[];
@@ -34,7 +36,7 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
 
     function drawObject(object: CanvasItemModel): void {
       context.beginPath();
-      context.fillStyle = object.color
+      context.fillStyle = object.color;
       context.fill(object.path);
       context.closePath();
     }
@@ -67,9 +69,10 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
 
   const stop = useCallback(() => {
     window.clearInterval(rerenderInterval);
-  }, [rerenderInterval]);
+    drawObjects();
+  }, [rerenderInterval, drawObjects]);
 
-  const reset = useCallback(()=>{
+  const reset = useCallback(() => {
     CanvasItemHistory.cleanHistory();
     const states = CanvasItemHistory.defaultSnapshot;
     items.forEach((item, key) => {
@@ -78,28 +81,27 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
         item.restoreState(state);
       }
     });
-  }, [items])
+  }, [items]);
 
   const handleUndo = useCallback(() => {
     undo();
     drawObjects();
   }, [drawObjects, undo]);
 
-  const handleReset = useCallback(()=>{
-    reset()
-    drawObjects()
-  }, [drawObjects, reset])
+  const handleReset = useCallback(() => {
+    reset();
+    drawObjects();
+  }, [drawObjects, reset]);
 
   useEffect(() => {
     drawObjects();
     CanvasItemHistory.setDefaultSnapshot(items);
-  }, [])
+  }, []);
 
   useEffect(() => {
     const { canvas, context } = getCanvasContext();
 
     function onMouseMove(event: MouseEvent) {
-
       if (selectedItem) {
         selectedItem.moveItem(event.offsetX, event.offsetY, ...clickedCord);
       }
@@ -158,7 +160,6 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
         <button onClick={handleUndo}>Undo</button>
         <button onClick={handleReset}>Reset</button>
       </div>
-
     </>
   );
 }
