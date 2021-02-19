@@ -5,12 +5,18 @@ class CanvasItemModel {
   private _yLoc: number;
   private _scale: number = 1;
   private _path: Path2D;
+  private readonly _color: string;
 
-  constructor(path: Path2D, x: number = 0, y: number = 0) {
+  constructor(path: Path2D, x: number = 0, y: number = 0, color = 'black') {
     this._path = path;
     this._xLoc = x;
     this._yLoc = y;
+    this._color = color;
     this._movePath();
+  }
+
+  get color(): string {
+    return this._color;
   }
 
   get path(): Path2D {
@@ -21,24 +27,13 @@ class CanvasItemModel {
     return this._scale;
   }
 
-  set scale(value: number) {
-    this._scale = value;
-  }
 
   get xLoc(): number {
     return this._xLoc;
   }
 
-  set xLoc(value: number) {
-    this._xLoc = value;
-  }
-
   get yLoc(): number {
     return this._yLoc;
-  }
-
-  set yLoc(value: number) {
-    this._yLoc = value;
   }
 
   private _movePath(

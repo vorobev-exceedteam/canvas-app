@@ -1,0 +1,14 @@
+.canvas-container {
+  margin-top: 16px;
+  height: 700px;
+  width: 700px;
+  border: solid 1px black;
+}
+
+.buttons-container {
+  margin-top: 16px;
+  gap: 10px;
+  display: flex;
+  flex-direction: row;
+
+}

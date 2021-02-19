@@ -32,6 +32,10 @@ class CanvasItemHistory {
     return this._defaultSnapshot;
   }
 
+  cleanHistory() {
+    this._history = [];
+  }
+
   isHistoryEmpty() {
     return !this._history.length;
   }

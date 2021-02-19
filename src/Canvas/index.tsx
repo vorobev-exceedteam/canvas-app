@@ -6,8 +6,8 @@ import {
   useState
 } from 'react';
 import './styles.scss';
-import CanvasItemModel from '../../models/CanvasItemModel';
-import CanvasItemHistory from '../../models/CanvasItemHistory';
+import CanvasItemModel from '../models/CanvasItemModel';
+import CanvasItemHistory from '../models/CanvasItemHistory';
 
 interface CanvasProps extends HTMLAttributes<HTMLCanvasElement> {
   items: CanvasItemModel[];
@@ -34,6 +34,7 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
 
     function drawObject(object: CanvasItemModel): void {
       context.beginPath();
+      context.fillStyle = object.color
       context.fill(object.path);
       context.closePath();
     }
@@ -69,6 +70,7 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
   }, [rerenderInterval]);
 
   const reset = useCallback(()=>{
+    CanvasItemHistory.cleanHistory();
     const states = CanvasItemHistory.defaultSnapshot;
     canvasItems.forEach((item, key) => {
       const state = states?.get(key);
@@ -152,10 +154,11 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
       <div className={'canvas-container'}>
         <canvas height={700} width={700} ref={canvasRef} {...rest} />
       </div>
-      <button onClick={handleUndo}>Undo</button>
-      <button onClick={handleReset}>Reset</button>
-      <button>Import</button>
-      <button>Export</button>
+      <div className={'buttons-container'}>
+        <button onClick={handleUndo}>Undo</button>
+        <button onClick={handleReset}>Reset</button>
+      </div>
+
     </>
   );
 }
