@@ -2,13 +2,16 @@
   margin-top: 16px;
   height: 700px;
   width: 700px;
-  border: solid 1px black;
+  border: solid 1px lightgray;
 }
 
 .buttons-container {
   margin-top: 16px;
-  gap: 10px;
+  gap: 3rem;
   display: flex;
   flex-direction: row;
-
+  button {
+    padding: 1rem;
+    font-size: 2rem;
+  }
 }

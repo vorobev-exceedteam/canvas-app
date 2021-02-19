@@ -18,7 +18,7 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
     null
   );
   const [clickedCord, setClickedCord] = useState<[number, number]>([0, 0]);
-  const [canvasItems, setItems] = useState<CanvasItemModel[]>(items || []); // todo is it really needed?
+
   const [rerenderInterval, setRerenderInterval] = useState<number>();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -40,8 +40,8 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
     }
 
     context.clearRect(0, 0, canvas.width, canvas.height);
-    canvasItems.forEach((item) => drawObject(item));
-  }, [canvasItems, getCanvasContext]);
+    items.forEach((item) => drawObject(item));
+  }, [items, getCanvasContext]);
 
   const start = useCallback(() => {
     setRerenderInterval(
@@ -52,18 +52,18 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
   }, [drawObjects]);
 
   const save = useCallback(() => {
-    CanvasItemHistory.saveState(canvasItems);
-  }, [canvasItems]);
+    CanvasItemHistory.saveState(items);
+  }, [items]);
 
   const undo = useCallback(() => {
     const states = CanvasItemHistory.getRecentStates();
-    canvasItems.forEach((item, key) => {
+    items.forEach((item, key) => {
       const state = states?.get(key);
       if (state) {
         item.restoreState(state);
       }
     });
-  }, [canvasItems]);
+  }, [items]);
 
   const stop = useCallback(() => {
     window.clearInterval(rerenderInterval);
@@ -72,13 +72,13 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
   const reset = useCallback(()=>{
     CanvasItemHistory.cleanHistory();
     const states = CanvasItemHistory.defaultSnapshot;
-    canvasItems.forEach((item, key) => {
+    items.forEach((item, key) => {
       const state = states?.get(key);
       if (state) {
         item.restoreState(state);
       }
     });
-  }, [canvasItems])
+  }, [items])
 
   const handleUndo = useCallback(() => {
     undo();
@@ -92,7 +92,7 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
 
   useEffect(() => {
     drawObjects();
-    CanvasItemHistory.setDefaultSnapshot(canvasItems);
+    CanvasItemHistory.setDefaultSnapshot(items);
   }, [])
 
   useEffect(() => {
@@ -106,7 +106,7 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
     }
 
     function onMouseDown(event: MouseEvent) {
-      for (let item of canvasItems) {
+      for (let item of items) {
         if (context.isPointInPath(item.path, event.offsetX, event.offsetY)) {
           save();
           setClickedCord([
@@ -137,7 +137,7 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
       canvas.removeEventListener('mousemove', onMouseMove);
     };
   }, [
-    canvasItems,
+    items,
     clickedCord,
     drawObjects,
     getCanvasContext,
