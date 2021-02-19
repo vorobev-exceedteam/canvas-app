@@ -14,5 +14,15 @@
   button {
     padding: 1rem;
     font-size: 2rem;
+    background: none;
+    border: 1px solid lightgray;
+    outline: none;
+    &:hover {
+      box-shadow: 0 0 10px 0 gray;
+    }
+    &:active {
+      box-shadow: 0 0 10px 0 darkgray;
+    }
+
   }
 }
