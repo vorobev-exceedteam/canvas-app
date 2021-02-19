@@ -9,7 +9,6 @@ import './styles.scss';
 import CanvasItemModel from '../models/CanvasItemModel';
 import CanvasItemHistory from '../models/CanvasItemHistory';
 import 'normalize.css';
-import debounce from '../utill/debounce';
 
 interface CanvasProps extends HTMLAttributes<HTMLCanvasElement> {
   items: CanvasItemModel[];
@@ -122,7 +121,7 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
       }
     }
 
-    function onMouseUp(event: MouseEvent) {
+    function onMouseUp() {
       stop();
       setSelectedItem(null);
       setClickedCord([0, 0]);
