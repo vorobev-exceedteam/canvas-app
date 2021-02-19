@@ -1,3 +1,5 @@
+import { CanvasItemState } from '../types';
+
 class CanvasItemModel {
   private _xLoc: number;
   private _yLoc: number;
@@ -39,25 +41,40 @@ class CanvasItemModel {
     this._yLoc = value;
   }
 
-  private _movePath(x?: number, y?: number) {
+  private _movePath(
+    x?: number,
+    y?: number,
+    dClickedX?: number,
+    dClickedY?: number
+  ) {
     const transformMatrix = new DOMMatrix();
-    console.log('moving to ')
-    transformMatrix.e = x ? x - this._xLoc : this._xLoc;
-    transformMatrix.f = y ? y - this._yLoc : this._yLoc;
+    transformMatrix.e = typeof x !== 'undefined' ? x - this._xLoc : this._xLoc;
+    transformMatrix.f = typeof y !== 'undefined' ? y - this._yLoc : this._yLoc;
+    if (dClickedX) {
+      transformMatrix.e -= dClickedX;
+    }
+    if (dClickedY) {
+      transformMatrix.f -= dClickedY;
+    }
     const path = new Path2D();
     path.addPath(this._path, transformMatrix);
     this._path = path;
   }
 
-  moveItem(x: number, y: number) {
-    console.log('moving: ', x, y);
-    this._movePath(x, y);
-    this._xLoc = x;
-    this._yLoc = y;
+  moveItem(x: number, y: number, dClickedX: number, dClickedY: number) {
+    this._movePath(x, y, dClickedX, dClickedY);
+    this._xLoc = x - dClickedX;
+    this._yLoc = y - dClickedY;
   }
 
-  isLocationInsideObject() {
-    // todo
+  getState() {
+    return { xLoc: this._xLoc, yLoc: this._yLoc };
+  }
+
+  restoreState(state: CanvasItemState) {
+    this._movePath(state.xLoc, state.yLoc);
+    this._xLoc = state.xLoc;
+    this._yLoc = state.yLoc;
   }
 }
 
