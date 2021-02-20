@@ -154,8 +154,6 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
     [save, start]
   );
 
-
-
   useEffect(() => {
     const { canvas } = getCanvasContext();
 
@@ -173,20 +171,19 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
           event,
           (event: MouseEvent, item: CanvasItemModel) => {
             setSelectedItems(selectedItems.set(item.id, item));
-            startDragging(event)
+            startDragging(event);
           }
         );
       }
       checkIfItemInLocation(
         event,
         (event: MouseEvent, item: CanvasItemModel) => {
-          const allItems = selectedItems.clear()
+          const allItems = selectedItems.clear();
           setSelectedItems(allItems.set(item.id, item));
-          startDragging(event)
+          startDragging(event);
         },
         () => {
           setSelectedItems(selectedItems.clear());
-          drawObjects();
         }
       );
     }
@@ -220,7 +217,9 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
     start,
     stop,
     isDragging,
-    handleAddOnClick
+    handleAddOnClick,
+    checkIfItemInLocation,
+    startDragging
   ]);
 
   return (
