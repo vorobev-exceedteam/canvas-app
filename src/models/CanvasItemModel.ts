@@ -1,4 +1,5 @@
 import { CanvasItemState } from '../types';
+import uuidv4 from '../utills/uuidv4';
 
 class CanvasItemModel {
   private _xLoc: number;
@@ -6,6 +7,9 @@ class CanvasItemModel {
   private _scale: number = 1;
   private _path: Path2D;
   private readonly _color: string;
+  private readonly _id: string;
+  private _dClickX: number = 0
+  private _dClickY: number = 0
 
   constructor(path: Path2D, x: number = 0, y: number = 0, color = 'black') {
     this._path = path;
@@ -13,6 +17,11 @@ class CanvasItemModel {
     this._yLoc = y;
     this._color = color;
     this._movePath();
+    this._id = uuidv4();
+  }
+
+  get id(): string {
+    return this._id;
   }
 
   get color(): string {
@@ -27,7 +36,6 @@ class CanvasItemModel {
     return this._scale;
   }
 
-
   get xLoc(): number {
     return this._xLoc;
   }
@@ -39,27 +47,31 @@ class CanvasItemModel {
   private _movePath(
     x?: number,
     y?: number,
-    dClickedX?: number,
-    dClickedY?: number
   ) {
     const transformMatrix = new DOMMatrix();
     transformMatrix.e = typeof x !== 'undefined' ? x - this._xLoc : this._xLoc;
     transformMatrix.f = typeof y !== 'undefined' ? y - this._yLoc : this._yLoc;
-    if (dClickedX) {
-      transformMatrix.e -= dClickedX;
-    }
-    if (dClickedY) {
-      transformMatrix.f -= dClickedY;
-    }
+    transformMatrix.e -= this._dClickX;
+    transformMatrix.f -= this._dClickY;
     const path = new Path2D();
     path.addPath(this._path, transformMatrix);
     this._path = path;
   }
 
-  moveItem(x: number, y: number, dClickedX: number, dClickedY: number) {
-    this._movePath(x, y, dClickedX, dClickedY);
-    this._xLoc = x - dClickedX;
-    this._yLoc = y - dClickedY;
+  setClickStartingPoint(x:number, y:number) {
+    this._dClickX = x - this._xLoc;
+    this._dClickY = y - this._yLoc;
+  }
+
+  clearClickStartingPoint() {
+    this._dClickX = 0;
+    this._dClickY = 0;
+  }
+
+  moveItem(x: number, y: number,) {
+    this._movePath(x, y);
+    this._xLoc = x - this._dClickX;
+    this._yLoc = y - this._dClickY;
   }
 
   getState() {

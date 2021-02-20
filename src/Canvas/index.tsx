@@ -2,6 +2,7 @@ import {
   HTMLAttributes,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState
 } from 'react';
@@ -9,18 +10,27 @@ import './styles.scss';
 import CanvasItemModel from '../models/CanvasItemModel';
 import CanvasItemHistory from '../models/CanvasItemHistory';
 import 'normalize.css';
+import { Map } from 'immutable';
 
 interface CanvasProps extends HTMLAttributes<HTMLCanvasElement> {
   items: CanvasItemModel[];
 }
 
 function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
-  const [selectedItem, setSelectedItem] = useState<CanvasItemModel | null>(
-    null
-  );
+  const [selectedItems, setSelectedItems] = useState<
+    Map<string, CanvasItemModel>
+  >(Map<string, CanvasItemModel>());
   const [clickedCord, setClickedCord] = useState<[number, number]>([0, 0]);
-
+  const [isDragging, setDraggingState] = useState<boolean>(false);
   const [rerenderInterval, setRerenderInterval] = useState<number>();
+
+  const [canvasItems, setCanvasItems] = useState<CanvasItemModel[]>(
+    items || []
+  );
+
+  useEffect(() => {
+    setCanvasItems(items);
+  }, [items]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -33,16 +43,18 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
   const drawObjects = useCallback(() => {
     const { context, canvas } = getCanvasContext();
 
-    function drawObject(object: CanvasItemModel): void {
+    const drawObject = (object: CanvasItemModel): void => {
       context.beginPath();
       context.fillStyle = object.color;
+      context.shadowColor = object.color;
+      context.shadowBlur = selectedItems.has(object.id) ? 16 : 0;
       context.fill(object.path);
       context.closePath();
-    }
+    };
 
     context.clearRect(0, 0, canvas.width, canvas.height);
-    items.forEach((item) => drawObject(item));
-  }, [items, getCanvasContext]);
+    canvasItems.forEach((item) => drawObject(item));
+  }, [getCanvasContext, canvasItems, selectedItems]);
 
   const start = useCallback(() => {
     setRerenderInterval(
@@ -53,18 +65,26 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
   }, [drawObjects]);
 
   const save = useCallback(() => {
-    CanvasItemHistory.saveState(items);
-  }, [items]);
+    CanvasItemHistory.saveState(canvasItems);
+  }, [canvasItems]);
 
   const undo = useCallback(() => {
     const states = CanvasItemHistory.getRecentStates();
-    items.forEach((item, key) => {
+    canvasItems.forEach((item, key) => {
       const state = states?.get(key);
       if (state) {
         item.restoreState(state);
       }
     });
-  }, [items]);
+  }, [canvasItems]);
+
+  useLayoutEffect(() => {
+    if (clickedCord[0] && clickedCord[1]) {
+      selectedItems.forEach((item) => {
+        item.setClickStartingPoint(...clickedCord);
+      });
+    }
+  }, [selectedItems, clickedCord]);
 
   const stop = useCallback(() => {
     window.clearInterval(rerenderInterval);
@@ -74,13 +94,13 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
   const reset = useCallback(() => {
     CanvasItemHistory.cleanHistory();
     const states = CanvasItemHistory.defaultSnapshot;
-    items.forEach((item, key) => {
+    canvasItems.forEach((item, key) => {
       const state = states?.get(key);
       if (state) {
         item.restoreState(state);
       }
     });
-  }, [items]);
+  }, [canvasItems]);
 
   const handleUndo = useCallback(() => {
     undo();
@@ -94,36 +114,87 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
 
   useEffect(() => {
     drawObjects();
-    CanvasItemHistory.setDefaultSnapshot(items);
+    CanvasItemHistory.setDefaultSnapshot(canvasItems);
   }, []);
 
+  const checkIfItemInLocation = useCallback(
+    (event: MouseEvent, cbOnObject: Function, cbNotOnObject?: Function) => {
+      const { context } = getCanvasContext();
+      for (let item of canvasItems) {
+        if (context.isPointInPath(item.path, event.offsetX, event.offsetY)) {
+          return cbOnObject(event, item);
+        }
+      }
+      if (cbNotOnObject) {
+        cbNotOnObject(event);
+      }
+    },
+    [canvasItems, getCanvasContext]
+  );
+
+  const handleAddOnClick = useCallback(
+    (event: MouseEvent) => {
+      const { context } = getCanvasContext();
+      for (let item of canvasItems) {
+        if (context.isPointInPath(item.path, event.offsetX, event.offsetY)) {
+          setSelectedItems(selectedItems.set(item.id, item));
+        }
+      }
+    },
+    [canvasItems, getCanvasContext, selectedItems]
+  );
+
+  const startDragging = useCallback(
+    (event: MouseEvent) => {
+      save();
+      setClickedCord([event.offsetX, event.offsetY]);
+      setDraggingState(true);
+      start();
+    },
+    [save, start]
+  );
+
+
+
   useEffect(() => {
-    const { canvas, context } = getCanvasContext();
+    const { canvas } = getCanvasContext();
 
     function onMouseMove(event: MouseEvent) {
-      if (selectedItem) {
-        selectedItem.moveItem(event.offsetX, event.offsetY, ...clickedCord);
+      if (isDragging) {
+        selectedItems.forEach((item) => {
+          item.moveItem(event.offsetX, event.offsetY);
+        });
       }
     }
 
     function onMouseDown(event: MouseEvent) {
-      for (let item of items) {
-        if (context.isPointInPath(item.path, event.offsetX, event.offsetY)) {
-          save();
-          setClickedCord([
-            event.offsetX - item.xLoc,
-            event.offsetY - item.yLoc
-          ]);
-          setSelectedItem(item);
-          start();
-          break;
-        }
+      if (event.ctrlKey) {
+        return checkIfItemInLocation(
+          event,
+          (event: MouseEvent, item: CanvasItemModel) => {
+            setSelectedItems(selectedItems.set(item.id, item));
+            startDragging(event)
+          }
+        );
       }
+      checkIfItemInLocation(
+        event,
+        (event: MouseEvent, item: CanvasItemModel) => {
+          const allItems = selectedItems.clear()
+          setSelectedItems(allItems.set(item.id, item));
+          startDragging(event)
+        },
+        () => {
+          setSelectedItems(selectedItems.clear());
+          drawObjects();
+        }
+      );
     }
 
-    function onMouseUp() {
+    function onMouseUp(event: MouseEvent) {
+      selectedItems.forEach((items) => items.clearClickStartingPoint());
+      setDraggingState(false);
       stop();
-      setSelectedItem(null);
       setClickedCord([0, 0]);
     }
 
@@ -138,16 +209,18 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
       canvas.removeEventListener('mousemove', onMouseMove);
     };
   }, [
-    items,
+    canvasItems,
     clickedCord,
     drawObjects,
     getCanvasContext,
     rerenderInterval,
     save,
-    selectedItem,
-    setSelectedItem,
+    selectedItems,
+    setSelectedItems,
     start,
-    stop
+    stop,
+    isDragging,
+    handleAddOnClick
   ]);
 
   return (
