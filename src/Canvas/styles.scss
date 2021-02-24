@@ -3,7 +3,6 @@
   height: 700px;
   width: 700px;
   border: solid 1px lightgray;
-
 }
 
 .buttons-container {
@@ -17,6 +16,7 @@
     background: none;
     border: 1px solid lightgray;
     outline: none;
+    transition: 0.2s all ease;
     &:hover {
       box-shadow: 0 0 10px 0 gray;
     }

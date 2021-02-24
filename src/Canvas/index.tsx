@@ -23,14 +23,7 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
   const [clickedCord, setClickedCord] = useState<[number, number]>([0, 0]);
   const [isDragging, setDraggingState] = useState<boolean>(false);
   const [rerenderInterval, setRerenderInterval] = useState<number>();
-
-  const [canvasItems, setCanvasItems] = useState<CanvasItemModel[]>(
-    items || []
-  );
-
-  useEffect(() => {
-    setCanvasItems(items);
-  }, [items]);
+  // todo think about better history handling
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -53,8 +46,8 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
     };
 
     context.clearRect(0, 0, canvas.width, canvas.height);
-    canvasItems.forEach((item) => drawObject(item));
-  }, [getCanvasContext, canvasItems, selectedItems]);
+    items.forEach((item) => drawObject(item));
+  }, [getCanvasContext, items, selectedItems]);
 
   const start = useCallback(() => {
     setRerenderInterval(
@@ -65,18 +58,18 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
   }, [drawObjects]);
 
   const save = useCallback(() => {
-    CanvasItemHistory.saveState(canvasItems);
-  }, [canvasItems]);
+    CanvasItemHistory.saveState(items);
+  }, [items]);
 
   const undo = useCallback(() => {
     const states = CanvasItemHistory.getRecentStates();
-    canvasItems.forEach((item, key) => {
+    items.forEach((item, key) => {
       const state = states?.get(key);
       if (state) {
         item.restoreState(state);
       }
     });
-  }, [canvasItems]);
+  }, [items]);
 
   useLayoutEffect(() => {
     if (clickedCord[0] && clickedCord[1]) {
@@ -84,7 +77,7 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
         item.setClickStartingPoint(...clickedCord);
       });
     }
-  }, [selectedItems, clickedCord]);
+  }, [selectedItems, clickedCord, drawObjects]);
 
   const stop = useCallback(() => {
     window.clearInterval(rerenderInterval);
@@ -94,13 +87,13 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
   const reset = useCallback(() => {
     CanvasItemHistory.cleanHistory();
     const states = CanvasItemHistory.defaultSnapshot;
-    canvasItems.forEach((item, key) => {
+    items.forEach((item, key) => {
       const state = states?.get(key);
       if (state) {
         item.restoreState(state);
       }
     });
-  }, [canvasItems]);
+  }, [items]);
 
   const handleUndo = useCallback(() => {
     undo();
@@ -114,13 +107,13 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
 
   useEffect(() => {
     drawObjects();
-    CanvasItemHistory.setDefaultSnapshot(canvasItems);
+    CanvasItemHistory.setDefaultSnapshot(items);
   }, []);
 
   const checkIfItemInLocation = useCallback(
     (event: MouseEvent, cbOnObject: Function, cbNotOnObject?: Function) => {
       const { context } = getCanvasContext();
-      for (let item of canvasItems) {
+      for (let item of items) {
         if (context.isPointInPath(item.path, event.offsetX, event.offsetY)) {
           return cbOnObject(event, item);
         }
@@ -129,20 +122,20 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
         cbNotOnObject(event);
       }
     },
-    [canvasItems, getCanvasContext]
+    [items, getCanvasContext]
   );
 
-  const handleAddOnClick = useCallback(
-    (event: MouseEvent) => {
-      const { context } = getCanvasContext();
-      for (let item of canvasItems) {
-        if (context.isPointInPath(item.path, event.offsetX, event.offsetY)) {
-          setSelectedItems(selectedItems.set(item.id, item));
-        }
-      }
-    },
-    [canvasItems, getCanvasContext, selectedItems]
-  );
+  // const handleAddOnClick = useCallback(
+  //   (event: MouseEvent) => {
+  //     const { context } = getCanvasContext();
+  //     for (let item of items) {
+  //       if (context.isPointInPath(item.path, event.offsetX, event.offsetY)) {
+  //         setSelectedItems(selectedItems.set(item.id, item));
+  //       }
+  //     }
+  //   },
+  //   [items, getCanvasContext, selectedItems]
+  // );
 
   const startDragging = useCallback(
     (event: MouseEvent) => {
@@ -154,18 +147,19 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
     [save, start]
   );
 
-  useEffect(() => {
-    const { canvas } = getCanvasContext();
-
-    function onMouseMove(event: MouseEvent) {
+  const onMouseMove = useCallback(
+    (event: MouseEvent) => {
       if (isDragging) {
         selectedItems.forEach((item) => {
           item.moveItem(event.offsetX, event.offsetY);
         });
       }
-    }
+    },
+    [isDragging, selectedItems]
+  );
 
-    function onMouseDown(event: MouseEvent) {
+  const onMouseDown = useCallback(
+    (event: MouseEvent) => {
       if (event.ctrlKey) {
         return checkIfItemInLocation(
           event,
@@ -186,14 +180,22 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
           setSelectedItems(selectedItems.clear());
         }
       );
-    }
+    },
+    [checkIfItemInLocation, selectedItems, startDragging]
+  );
 
-    function onMouseUp(event: MouseEvent) {
+  const onMouseUp = useCallback(
+    () => {
       selectedItems.forEach((items) => items.clearClickStartingPoint());
       setDraggingState(false);
       stop();
       setClickedCord([0, 0]);
-    }
+    },
+    [selectedItems, stop]
+  );
+
+  useEffect(() => {
+    const { canvas } = getCanvasContext();
 
     canvas.addEventListener('mousedown', onMouseDown);
     canvas.addEventListener('mouseup', onMouseUp);
@@ -205,22 +207,7 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
       canvas.removeEventListener('mouseup', onMouseUp);
       canvas.removeEventListener('mousemove', onMouseMove);
     };
-  }, [
-    canvasItems,
-    clickedCord,
-    drawObjects,
-    getCanvasContext,
-    rerenderInterval,
-    save,
-    selectedItems,
-    setSelectedItems,
-    start,
-    stop,
-    isDragging,
-    handleAddOnClick,
-    checkIfItemInLocation,
-    startDragging
-  ]);
+  }, [getCanvasContext, onMouseDown, onMouseMove, onMouseUp, rerenderInterval]);
 
   return (
     <>
