@@ -6,7 +6,7 @@ To run development server, enter:
 
 ### `npm start`
 
-then open [this](http://localhost:3000/canvas-app)
+then open [this](http://localhost:3000/)
 
 
 To get built version, type this:

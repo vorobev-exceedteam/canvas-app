@@ -4,6 +4,8 @@ import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import CanvasItemHistory from './models/CanvasItemHistory';
 import CanvasItemModel from './models/CanvasItemModel';
 import FileSaver from 'file-saver';
+import mockItems from './models/MockItems';
+import createMockItems from './models/MockItems';
 
 function App() {
   const [items, setItems] = useState<CanvasItemModel[]>([]);
@@ -20,7 +22,7 @@ function App() {
           const newItems = CanvasItemModel.fromJSON(result);
           console.log(newItems);
           setItems([...items, ...newItems]);
-          event.target.value = ''
+          event.target.value = '';
         }
       };
       const files = event.target.files as FileList;
@@ -34,6 +36,11 @@ function App() {
     const jsonString = JSON.stringify(items.map((item) => item.toJSONObject()));
     const blob = new Blob([jsonString], { type: 'application/json' });
     FileSaver.saveAs(blob, 'items.json');
+  }, [items]);
+
+  const addDefaultFigures = useCallback(() => {
+    const mockItems = createMockItems();
+    setItems([...mockItems, ...items]);
   }, [items]);
 
   return (
@@ -53,8 +60,12 @@ function App() {
         <button onClick={handleExport} className={'ctrl-button'}>
           Export
         </button>
+
       </div>
       <Canvas items={items} history={history} />
+      <button className={'ctrl-button'} style={{marginTop: '16px'}} onClick={addDefaultFigures}>
+        Add Default Figures
+      </button>
     </div>
   );
 }
