@@ -41,4 +41,4 @@ class CanvasItemHistory {
   }
 }
 
-export default new CanvasItemHistory();
+export default CanvasItemHistory;

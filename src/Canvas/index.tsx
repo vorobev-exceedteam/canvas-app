@@ -8,22 +8,23 @@ import {
 } from 'react';
 import './styles.scss';
 import CanvasItemModel from '../models/CanvasItemModel';
-import CanvasItemHistory from '../models/CanvasItemHistory';
+
 import 'normalize.css';
 import { Map } from 'immutable';
+import CanvasItemHistory from '../models/CanvasItemHistory';
 
 interface CanvasProps extends HTMLAttributes<HTMLCanvasElement> {
   items: CanvasItemModel[];
+  history: CanvasItemHistory
 }
 
-function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
+function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
   const [selectedItems, setSelectedItems] = useState<
     Map<string, CanvasItemModel>
   >(Map<string, CanvasItemModel>());
   const [clickedCord, setClickedCord] = useState<[number, number]>([0, 0]);
   const [isDragging, setDraggingState] = useState<boolean>(false);
   const [rerenderInterval, setRerenderInterval] = useState<number>();
-  // todo think about better history handling
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -58,18 +59,18 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
   }, [drawObjects]);
 
   const save = useCallback(() => {
-    CanvasItemHistory.saveState(items);
-  }, [items]);
+    history.saveState(items);
+  }, [history, items]);
 
   const undo = useCallback(() => {
-    const states = CanvasItemHistory.getRecentStates();
+    const states = history.getRecentStates();
     items.forEach((item, key) => {
       const state = states?.get(key);
       if (state) {
         item.restoreState(state);
       }
     });
-  }, [items]);
+  }, [history, items]);
 
   useLayoutEffect(() => {
     if (clickedCord[0] && clickedCord[1]) {
@@ -85,15 +86,15 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
   }, [rerenderInterval, drawObjects]);
 
   const reset = useCallback(() => {
-    CanvasItemHistory.cleanHistory();
-    const states = CanvasItemHistory.defaultSnapshot;
+    history.cleanHistory();
+    const states = history.defaultSnapshot;
     items.forEach((item, key) => {
       const state = states?.get(key);
       if (state) {
         item.restoreState(state);
       }
     });
-  }, [items]);
+  }, [history, items]);
 
   const handleUndo = useCallback(() => {
     undo();
@@ -107,8 +108,8 @@ function Canvas({ items, ...rest }: CanvasProps): JSX.Element {
 
   useEffect(() => {
     drawObjects();
-    CanvasItemHistory.setDefaultSnapshot(items);
-  }, []);
+    history.setDefaultSnapshot(items);
+  }, [drawObjects, history, items]);
 
   const checkIfItemInLocation = useCallback(
     (event: MouseEvent, cbOnObject: Function, cbNotOnObject?: Function) => {
