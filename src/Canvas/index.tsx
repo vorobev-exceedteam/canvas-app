@@ -45,7 +45,6 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
       context.fill(object.path);
       context.closePath();
     };
-
     context.clearRect(0, 0, canvas.width, canvas.height);
     items.forEach((item) => drawObject(item));
   }, [getCanvasContext, items, selectedItems]);
@@ -64,8 +63,8 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
 
   const undo = useCallback(() => {
     const states = history.getRecentStates();
-    items.forEach((item, key) => {
-      const state = states?.get(key);
+    items.forEach((item) => {
+      const state = states?.get(item.id);
       if (state) {
         item.restoreState(state);
       }
@@ -88,8 +87,8 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
   const reset = useCallback(() => {
     history.cleanHistory();
     const states = history.defaultSnapshot;
-    items.forEach((item, key) => {
-      const state = states?.get(key);
+    items.forEach((item) => {
+      const state = states?.get(item.id);
       if (state) {
         item.restoreState(state);
       }
@@ -107,9 +106,9 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
   }, [drawObjects, reset]);
 
   useEffect(() => {
+    history.updateDefaultSnapshot(items)
     drawObjects();
-    history.setDefaultSnapshot(items);
-  }, [drawObjects, history, items]);
+  }, [items, history]);
 
   const checkIfItemInLocation = useCallback(
     (event: MouseEvent, cbOnObject: Function, cbNotOnObject?: Function) => {
@@ -125,18 +124,6 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
     },
     [items, getCanvasContext]
   );
-
-  // const handleAddOnClick = useCallback(
-  //   (event: MouseEvent) => {
-  //     const { context } = getCanvasContext();
-  //     for (let item of items) {
-  //       if (context.isPointInPath(item.path, event.offsetX, event.offsetY)) {
-  //         setSelectedItems(selectedItems.set(item.id, item));
-  //       }
-  //     }
-  //   },
-  //   [items, getCanvasContext, selectedItems]
-  // );
 
   const startDragging = useCallback(
     (event: MouseEvent) => {
@@ -216,8 +203,8 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
         <canvas height={700} width={700} ref={canvasRef} {...rest} />
       </div>
       <div className={'buttons-container'}>
-        <button onClick={handleUndo}>Undo</button>
-        <button onClick={handleReset}>Reset</button>
+        <button className={'ctrl-button'} onClick={handleUndo}>Undo</button>
+        <button className={'ctrl-button'} onClick={handleReset}>Reset</button>
       </div>
     </>
   );

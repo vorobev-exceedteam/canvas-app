@@ -1,4 +1,4 @@
-import { CanvasItemState } from '../types';
+import { CanvasItemJSONElement, CanvasItemState } from '../types';
 import uuidv4 from '../utills/uuidv4';
 
 class CanvasItemModel {
@@ -8,11 +8,13 @@ class CanvasItemModel {
   private _path: Path2D;
   private readonly _color: string;
   private readonly _id: string;
-  private _dClickX: number = 0
-  private _dClickY: number = 0
+  private _dClickX: number = 0;
+  private _dClickY: number = 0;
+  private readonly _svg: string;
 
-  constructor(path: Path2D, x: number = 0, y: number = 0, color = 'black') {
-    this._path = path;
+  constructor(svg: string, x: number = 0, y: number = 0, color = 'black') {
+    this._path = new Path2D(svg);
+    this._svg = svg;
     this._xLoc = x;
     this._yLoc = y;
     this._color = color;
@@ -44,10 +46,7 @@ class CanvasItemModel {
     return this._yLoc;
   }
 
-  private _movePath(
-    x?: number,
-    y?: number,
-  ) {
+  private _movePath(x?: number, y?: number) {
     const transformMatrix = new DOMMatrix();
     transformMatrix.e = typeof x !== 'undefined' ? x - this._xLoc : this._xLoc;
     transformMatrix.f = typeof y !== 'undefined' ? y - this._yLoc : this._yLoc;
@@ -58,7 +57,7 @@ class CanvasItemModel {
     this._path = path;
   }
 
-  setClickStartingPoint(x:number, y:number) {
+  setClickStartingPoint(x: number, y: number) {
     this._dClickX = x - this._xLoc;
     this._dClickY = y - this._yLoc;
   }
@@ -68,10 +67,26 @@ class CanvasItemModel {
     this._dClickY = 0;
   }
 
-  moveItem(x: number, y: number,) {
+  moveItem(x: number, y: number) {
     this._movePath(x, y);
     this._xLoc = x - this._dClickX;
     this._yLoc = y - this._dClickY;
+  }
+
+  toJSONObject() {
+    return {
+      svg: this._svg,
+      xLoc: this._xLoc,
+      yLoc: this._yLoc,
+      color: this._color
+    };
+  }
+
+  static fromJSON(json: string) {
+    const items = JSON.parse(json);
+    return items.map((item: CanvasItemJSONElement) =>
+        new CanvasItemModel(item.svg, item.xLoc, item.yLoc, item.color)
+    );
   }
 
   getState() {
