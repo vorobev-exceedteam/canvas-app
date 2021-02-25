@@ -15,7 +15,30 @@ To get built version, type this:
 
 then build directory in project folder will appear
 
+# How JSON of a custom item should look
+
+JSON should contain the following fields:
+
+* xLoc - location of the item on x-axis in px;
+* yLoc - location of the item on y-axis in px;
+* svg - path string of svg;
+* color - color of the item;
+ 
+Example of json with custom item
+
+```json
+[
+  {
+    "xLoc": 400, 
+    "yLoc": 100, 
+    "svg": "M 0 0 V 280 Q 252 323 138 237 C -64 196 96 108 0 0", 
+    "color": "brown"
+  }
+]
+```
+
 # What is implemented
+* Import and export of objects
 * Moving objects with a mouse (click and drag)
 * All object is selectable through CTRL+Click (hold CTRL+Click to move selected objects around)
 * History module (you can undo your changes and reset to initial state)
