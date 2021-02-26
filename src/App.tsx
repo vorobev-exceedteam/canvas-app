@@ -139,15 +139,7 @@ function App() {
         history={history}
       />
       <div style={{ marginTop: '16px', display: 'flex', gap: '16px' }}>
-        <button className={'ctrl-button'} onClick={addDefaultFigures}>
-          Add Default Figures
-        </button>
-        <button onClick={saveDefaultState} className={'ctrl-button'}>
-          Save As Default
-        </button>
-        <button onClick={clearDefaultState} className={'ctrl-button'}>
-          Clear Default
-        </button>
+
       </div>
     </div>
   );
