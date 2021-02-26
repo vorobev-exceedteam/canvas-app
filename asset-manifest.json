@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/canvas-app/static/css/main.fd10e0f8.chunk.css",
-    "main.js": "/canvas-app/static/js/main.e7a19506.chunk.js",
-    "main.js.map": "/canvas-app/static/js/main.e7a19506.chunk.js.map",
+    "main.js": "/canvas-app/static/js/main.da09277e.chunk.js",
+    "main.js.map": "/canvas-app/static/js/main.da09277e.chunk.js.map",
     "runtime-main.js": "/canvas-app/static/js/runtime-main.ad24b5c0.js",
     "runtime-main.js.map": "/canvas-app/static/js/runtime-main.ad24b5c0.js.map",
     "static/css/2.679831fc.chunk.css": "/canvas-app/static/css/2.679831fc.chunk.css",
@@ -20,6 +20,6 @@
     "static/css/2.679831fc.chunk.css",
     "static/js/2.68713005.chunk.js",
     "static/css/main.fd10e0f8.chunk.css",
-    "static/js/main.e7a19506.chunk.js"
+    "static/js/main.da09277e.chunk.js"
   ]
 }
