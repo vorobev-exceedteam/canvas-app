@@ -1,5 +1,5 @@
 # Demo of the project
-Demo of the project you can find [here](https://github.com/vorobev-exceedteam/canvas-app)
+Demo of the project you can find [here](https://vorobev-exceedteam.github.io/canvas-app/)
 
 # How to run this project locally
 To run development server, enter:
