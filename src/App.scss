@@ -10,6 +10,14 @@
   display: none;
 }
 
+.buttons-container {
+  margin-top: 16px;
+  gap: 6rem;
+  display: flex;
+  flex-direction: row;
+
+}
+
 .import-export-container {
   margin: 32px 0;
   display: flex;

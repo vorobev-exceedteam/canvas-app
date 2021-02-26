@@ -24,7 +24,7 @@ JSON should contain the following fields:
 * svg - path string of svg;
 * color - color of the item;
  
-Example of json with custom item
+Example of json file with custom items
 
 ```json
 [
@@ -33,9 +33,16 @@ Example of json with custom item
     "yLoc": 100, 
     "svg": "M 0 0 V 280 Q 252 323 138 237 C -64 196 96 108 0 0", 
     "color": "brown"
+  },
+  {
+    "xLoc": 200,
+    "yLoc": 60,
+    "svg": "M 0 0 V 100 Q 232 323 138 237 C -74 196 96 108 0 0",
+    "color": "red"
   }
 ]
 ```
+
 
 # What is implemented
 * Import and export of objects

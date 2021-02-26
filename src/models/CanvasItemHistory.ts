@@ -1,21 +1,26 @@
 import CanvasItemModel from './CanvasItemModel';
 import { CanvasItemState } from '../types';
+import { Map } from 'immutable';
 
 class CanvasItemHistory {
   private _history: Map<string, CanvasItemState>[] = [];
-  private _defaultSnapshot = new Map<string, CanvasItemState>();
+  private _defaultSnapshot = Map<string, CanvasItemState>().asMutable();
 
-  constructor(items?: CanvasItemModel[]) {
+  constructor(items?: Map<string, CanvasItemModel> ) {
     if (items) {
       this.setDefaultSnapshot(items);
     }
   }
 
-  saveState(items: CanvasItemModel[]) {
-    const itemsStates = new Map<string, CanvasItemState>();
-    items.forEach((item) => {
-      itemsStates.set(item.id, item.getState());
-    });
+  saveState(items: Map<string, CanvasItemModel>) {
+    const itemsStates = Map<string, CanvasItemState>().asMutable();
+    for (const id of Array.from(items.keys())) {
+      const item = items.get(id)
+      if (item) {
+        itemsStates.set(id, item.getState())
+      }
+    }
+    console.log(itemsStates)
     this._history.push(itemsStates);
   }
 
@@ -23,11 +28,14 @@ class CanvasItemHistory {
     return this._history.pop();
   }
 
-  setDefaultSnapshot(items: CanvasItemModel[]) {
-    const itemsStates = new Map<string, CanvasItemState>();
-    items.forEach((item) => {
-      itemsStates.set(item.id, item.getState());
-    });
+  setDefaultSnapshot(items: Map<string, CanvasItemModel>) {
+    const itemsStates = Map<string, CanvasItemState>().asMutable();
+    for (const id of Array.from(items.keys())) {
+      const item = items.get(id)
+      if (item) {
+        itemsStates.set(id, item.getState())
+      }
+    }
     this._defaultSnapshot = itemsStates;
   }
 

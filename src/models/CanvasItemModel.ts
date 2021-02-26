@@ -1,4 +1,4 @@
-import { CanvasItemJSONElement, CanvasItemState } from '../types';
+import { CanvasItemState } from '../types';
 import uuidv4 from '../utills/uuidv4';
 
 class CanvasItemModel {
@@ -12,14 +12,14 @@ class CanvasItemModel {
   private _dClickY: number = 0;
   private readonly _svg: string;
 
-  constructor(svg: string, x: number = 0, y: number = 0, color = 'black') {
+  constructor(svg: string, x: number = 0, y: number = 0, color = 'black', id?: string) {
     this._path = new Path2D(svg);
     this._svg = svg;
     this._xLoc = x;
     this._yLoc = y;
     this._color = color;
     this._movePath();
-    this._id = uuidv4();
+    this._id = id? id : uuidv4();
   }
 
   get id(): string {
@@ -73,7 +73,7 @@ class CanvasItemModel {
     this._yLoc = y - this._dClickY;
   }
 
-  toJSONObject() {
+  getState() {
     return {
       svg: this._svg,
       xLoc: this._xLoc,
@@ -82,15 +82,8 @@ class CanvasItemModel {
     };
   }
 
-  static fromJSON(json: string) {
-    const items = JSON.parse(json);
-    return items.map((item: CanvasItemJSONElement) =>
-        new CanvasItemModel(item.svg, item.xLoc, item.yLoc, item.color)
-    );
-  }
-
-  getState() {
-    return { xLoc: this._xLoc, yLoc: this._yLoc };
+  static restoreItem(state: CanvasItemState, id?: string) {
+    return new CanvasItemModel(state.svg, state.xLoc, state.yLoc, state.color, id);
   }
 
   restoreState(state: CanvasItemState) {

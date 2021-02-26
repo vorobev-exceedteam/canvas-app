@@ -8,20 +8,27 @@ import {
 } from 'react';
 import './styles.scss';
 import CanvasItemModel from '../models/CanvasItemModel';
-
 import 'normalize.css';
 import { Map } from 'immutable';
 import CanvasItemHistory from '../models/CanvasItemHistory';
+import { CanvasItemState } from '../types';
 
 interface CanvasProps extends HTMLAttributes<HTMLCanvasElement> {
-  items: CanvasItemModel[];
-  history: CanvasItemHistory
+  items: Map<string, CanvasItemModel>;
+  history: CanvasItemHistory;
+  setItems: Function;
+  selectedItems: Map<string, CanvasItemModel>;
+  setSelectedItems: Function;
 }
 
-function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
-  const [selectedItems, setSelectedItems] = useState<
-    Map<string, CanvasItemModel>
-  >(Map<string, CanvasItemModel>());
+function Canvas({
+  items,
+  setItems,
+  selectedItems,
+  setSelectedItems,
+  history,
+  ...rest
+}: CanvasProps): JSX.Element {
   const [clickedCord, setClickedCord] = useState<[number, number]>([0, 0]);
   const [isDragging, setDraggingState] = useState<boolean>(false);
   const [rerenderInterval, setRerenderInterval] = useState<number>();
@@ -46,7 +53,7 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
       context.closePath();
     };
     context.clearRect(0, 0, canvas.width, canvas.height);
-    items.forEach((item) => drawObject(item));
+    Array.from(items.values()).forEach((item) => drawObject(item));
   }, [getCanvasContext, items, selectedItems]);
 
   const start = useCallback(() => {
@@ -61,15 +68,6 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
     history.saveState(items);
   }, [history, items]);
 
-  const undo = useCallback(() => {
-    const states = history.getRecentStates();
-    items.forEach((item) => {
-      const state = states?.get(item.id);
-      if (state) {
-        item.restoreState(state);
-      }
-    });
-  }, [history, items]);
 
   useLayoutEffect(() => {
     if (clickedCord[0] && clickedCord[1]) {
@@ -87,13 +85,32 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
   const reset = useCallback(() => {
     history.cleanHistory();
     const states = history.defaultSnapshot;
-    items.forEach((item) => {
-      const state = states?.get(item.id);
-      if (state) {
-        item.restoreState(state);
+    const newItems = Map<string, CanvasItemModel>().asMutable();
+    console.log(states)
+    if (states) {
+
+      for (const id of Array.from(states.keys())) {
+        const state = states.get(id) as CanvasItemState;
+        newItems.set(id, CanvasItemModel.restoreItem(state, id));
       }
-    });
-  }, [history, items]);
+      console.log(newItems)
+      setItems(newItems.asImmutable())
+    }
+
+  }, [history, setItems]);
+
+  const undo = useCallback(() => {
+    const states = history.getRecentStates();
+    const newItems = Map<string, CanvasItemModel>().asMutable();
+    if (states) {
+      for (const id of Array.from(states.keys())) {
+        const state = states.get(id) as CanvasItemState;
+        newItems.set(id, CanvasItemModel.restoreItem(state, id));
+      }
+      console.log(newItems)
+      setItems(newItems.asImmutable())
+    }
+  }, [history, setItems]);
 
   const handleUndo = useCallback(() => {
     undo();
@@ -106,14 +123,14 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
   }, [drawObjects, reset]);
 
   useEffect(() => {
-    history.updateDefaultSnapshot(items)
+    // history.updateDefaultSnapshot(items);
     drawObjects();
-  }, [items, history]);
+  }, [items, history, drawObjects]);
 
   const checkIfItemInLocation = useCallback(
     (event: MouseEvent, cbOnObject: Function, cbNotOnObject?: Function) => {
       const { context } = getCanvasContext();
-      for (let item of items) {
+      for (let item of Array.from(items.values())) {
         if (context.isPointInPath(item.path, event.offsetX, event.offsetY)) {
           return cbOnObject(event, item);
         }
@@ -169,18 +186,15 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
         }
       );
     },
-    [checkIfItemInLocation, selectedItems, startDragging]
+    [checkIfItemInLocation, selectedItems, setSelectedItems, startDragging]
   );
 
-  const onMouseUp = useCallback(
-    () => {
-      selectedItems.forEach((items) => items.clearClickStartingPoint());
-      setDraggingState(false);
-      stop();
-      setClickedCord([0, 0]);
-    },
-    [selectedItems, stop]
-  );
+  const onMouseUp = useCallback(() => {
+    selectedItems.forEach((items) => items.clearClickStartingPoint());
+    setDraggingState(false);
+    stop();
+    setClickedCord([0, 0]);
+  }, [selectedItems, stop]);
 
   useEffect(() => {
     const { canvas } = getCanvasContext();
@@ -191,6 +205,7 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
 
     return function () {
       window.clearInterval(rerenderInterval);
+
       canvas.removeEventListener('mousedown', onMouseDown);
       canvas.removeEventListener('mouseup', onMouseUp);
       canvas.removeEventListener('mousemove', onMouseMove);
@@ -203,8 +218,12 @@ function Canvas({ items, history, ...rest }: CanvasProps): JSX.Element {
         <canvas height={700} width={700} ref={canvasRef} {...rest} />
       </div>
       <div className={'buttons-container'}>
-        <button className={'ctrl-button'} onClick={handleUndo}>Undo</button>
-        <button className={'ctrl-button'} onClick={handleReset}>Reset</button>
+        <button className={'ctrl-button'} onClick={handleUndo}>
+          Undo
+        </button>
+        <button className={'ctrl-button'} onClick={handleReset}>
+          Reset
+        </button>
       </div>
     </>
   );
