@@ -6,7 +6,7 @@ class CanvasItemHistory {
   private _history: Map<string, CanvasItemState>[] = [];
   private _defaultSnapshot = Map<string, CanvasItemState>().asMutable();
 
-  constructor(items?: Map<string, CanvasItemModel> ) {
+  constructor(items?: Map<string, CanvasItemModel>) {
     if (items) {
       this.setDefaultSnapshot(items);
     }
@@ -15,12 +15,12 @@ class CanvasItemHistory {
   saveState(items: Map<string, CanvasItemModel>) {
     const itemsStates = Map<string, CanvasItemState>().asMutable();
     for (const id of Array.from(items.keys())) {
-      const item = items.get(id)
+      const item = items.get(id);
       if (item) {
-        itemsStates.set(id, item.getState())
+        itemsStates.set(id, item.getState());
       }
     }
-    console.log(itemsStates)
+    console.log(itemsStates);
     this._history.push(itemsStates);
   }
 
@@ -31,9 +31,9 @@ class CanvasItemHistory {
   setDefaultSnapshot(items: Map<string, CanvasItemModel>) {
     const itemsStates = Map<string, CanvasItemState>().asMutable();
     for (const id of Array.from(items.keys())) {
-      const item = items.get(id)
+      const item = items.get(id);
       if (item) {
-        itemsStates.set(id, item.getState())
+        itemsStates.set(id, item.getState());
       }
     }
     this._defaultSnapshot = itemsStates;
@@ -49,6 +49,10 @@ class CanvasItemHistory {
 
   get defaultSnapshot() {
     return this._defaultSnapshot;
+  }
+
+  clearDefaultSnapshot() {
+    this._defaultSnapshot.clear();
   }
 
   cleanHistory() {

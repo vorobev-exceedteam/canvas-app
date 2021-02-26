@@ -91,8 +91,9 @@ function App() {
   }, [history, items]);
 
   const clearDefaultState = useCallback(() => {
+    history.clearDefaultSnapshot()
     localStorage.removeItem('defaultState');
-  }, []);
+  }, [history]);
 
   const deleteCb = useCallback(
     (event: KeyboardEvent) => {
