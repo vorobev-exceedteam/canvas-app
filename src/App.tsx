@@ -130,6 +130,15 @@ function App() {
         <button onClick={handleExportAll} className={'ctrl-button'}>
           Export All
         </button>
+        <button className={'ctrl-button'} onClick={addDefaultFigures}>
+          Add Default Figures
+        </button>
+        <button onClick={saveDefaultState} className={'ctrl-button'}>
+          Save As Default
+        </button>
+        <button onClick={clearDefaultState} className={'ctrl-button'}>
+          Clear Default
+        </button>
       </div>
       <Canvas
         selectedItems={selectedItems}
