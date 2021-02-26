@@ -1,7 +1,7 @@
 {
   "name": "canvas-app",
   "version": "0.1.0",
-  "homepage": "https://github.com/vorobev-exceedteam/canvas-app",
+  "homepage": "https://vorobev-exceedteam.github.io/canvas-app/",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.9",
