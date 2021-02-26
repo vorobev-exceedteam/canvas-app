@@ -9,33 +9,19 @@ import { Map } from 'immutable';
 import { CanvasItemState } from './types';
 
 function App() {
-  // const loadDefaultState = useCallback(() => {
-  //   const itemsString = localStorage.getItem('defaultState');
-  //   const items = Map<string, CanvasItemModel>().asMutable();
-  //   if (itemsString) {
-  //     const itemsStates = JSON.parse(itemsString) as CanvasItemState[];
-  //     console.log(itemsStates);
-  //     itemsStates.forEach((itemState) => {
-  //       const item = CanvasItemModel.restoreItem(itemState);
-  //       items.set(item.id, item);
-  //     });
-  //   }
-  //   return items.asImmutable();
-  // }, []);
 
   const defaultState = useMemo(() => {
     const itemsString = localStorage.getItem('defaultState');
-    const items = Map<string, CanvasItemModel>().asMutable();
+    let items = Map<string, CanvasItemModel>();
     if (itemsString) {
       const itemsStates = JSON.parse(itemsString) as CanvasItemState[];
-      console.log(itemsStates);
       itemsStates.forEach((itemState) => {
         const item = CanvasItemModel.restoreItem(itemState);
-        items.set(item.id, item);
+        items = items.withMutations((map) => map.set(item.id, item));
       });
     }
-    return items.asImmutable();
-  }, [])
+    return items;
+  }, []);
 
   const [items, setItems] = useState<Map<string, CanvasItemModel>>(
     defaultState
@@ -53,18 +39,19 @@ function App() {
         if (e?.target) {
           const result = e.target.result as string;
           const states = JSON.parse(result) as CanvasItemState[];
-          history.saveState(items)
+          history.saveState(items);
           const newItems = states.map((state) =>
             CanvasItemModel.restoreItem(state)
           );
-          const newMap = items.asMutable();
-          newItems.forEach((item) => newMap.set(item.id, item));
-          setItems(newMap.asImmutable());
+          let newMap = items.asImmutable();
+          newItems.forEach((item) =>
+            newMap = newMap.withMutations((map) => map.set(item.id, item))
+          );
+          setItems(newMap);
           event.target.value = '';
         }
       };
       const files = event.target.files as FileList;
-      console.log(files);
       reader.readAsText(files[0]);
     },
     [history, items]
@@ -88,16 +75,18 @@ function App() {
 
   const addDefaultFigures = useCallback(() => {
     const mockItems = createMockItems();
-    const newItems = items.asMutable();
-    mockItems.forEach((item) => newItems.set(item.id, item));
-    setItems(newItems.asImmutable());
+    let newItems = items.asImmutable();
+    mockItems.forEach((item) =>
+      newItems = newItems.withMutations((map) => map.set(item.id, item))
+    );
+    setItems(newItems);
   }, [items]);
 
   const saveDefaultState = useCallback(() => {
     const itemsString = JSON.stringify(
       Array.from(items.values()).map((item) => item.getState())
     );
-    history.setDefaultSnapshot(items)
+    history.setDefaultSnapshot(items);
     localStorage.setItem('defaultState', itemsString);
   }, [history, items]);
 
@@ -149,7 +138,7 @@ function App() {
         setItems={setItems}
         history={history}
       />
-      <div style={{ marginTop: '32px', display: 'flex', gap: '16px' }}>
+      <div style={{ marginTop: '16px', display: 'flex', gap: '16px' }}>
         <button className={'ctrl-button'} onClick={addDefaultFigures}>
           Add Default Figures
         </button>

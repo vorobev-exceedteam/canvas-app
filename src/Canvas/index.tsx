@@ -68,7 +68,6 @@ function Canvas({
     history.saveState(items);
   }, [history, items]);
 
-
   useLayoutEffect(() => {
     if (clickedCord[0] && clickedCord[1]) {
       selectedItems.forEach((item) => {
@@ -82,35 +81,30 @@ function Canvas({
     drawObjects();
   }, [rerenderInterval, drawObjects]);
 
+  const updateItems = useCallback(
+    (states: Map<string, CanvasItemState> | undefined) => {
+      if (states) {
+        let newItems = Map<string, CanvasItemModel>();
+        for (const id of Array.from(states.keys())) {
+          const state = states.get(id) as CanvasItemState;
+          newItems = newItems.withMutations((map) =>
+            map.set(id, CanvasItemModel.restoreItem(state, id))
+          );
+        }
+        setItems(newItems);
+      }
+    },
+    [setItems]
+  );
+
   const reset = useCallback(() => {
     history.cleanHistory();
-    const states = history.defaultSnapshot;
-    const newItems = Map<string, CanvasItemModel>().asMutable();
-    console.log(states)
-    if (states) {
-
-      for (const id of Array.from(states.keys())) {
-        const state = states.get(id) as CanvasItemState;
-        newItems.set(id, CanvasItemModel.restoreItem(state, id));
-      }
-      console.log(newItems)
-      setItems(newItems.asImmutable())
-    }
-
-  }, [history, setItems]);
+    updateItems(history.defaultSnapshot);
+  }, [history, updateItems]);
 
   const undo = useCallback(() => {
-    const states = history.getRecentStates();
-    const newItems = Map<string, CanvasItemModel>().asMutable();
-    if (states) {
-      for (const id of Array.from(states.keys())) {
-        const state = states.get(id) as CanvasItemState;
-        newItems.set(id, CanvasItemModel.restoreItem(state, id));
-      }
-      console.log(newItems)
-      setItems(newItems.asImmutable())
-    }
-  }, [history, setItems]);
+    updateItems(history.getRecentStates());
+  }, [history, updateItems]);
 
   const handleUndo = useCallback(() => {
     undo();
@@ -123,7 +117,6 @@ function Canvas({
   }, [drawObjects, reset]);
 
   useEffect(() => {
-    // history.updateDefaultSnapshot(items);
     drawObjects();
   }, [items, history, drawObjects]);
 

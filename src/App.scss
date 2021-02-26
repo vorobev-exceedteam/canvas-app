@@ -15,20 +15,19 @@
   gap: 6rem;
   display: flex;
   flex-direction: row;
-
 }
 
 .import-export-container {
-  margin: 32px 0;
+  margin-top: 16px;
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 6rem;
+  gap: 4rem;
 }
 
 .ctrl-button {
   padding: 0.8rem 1rem;
-  font-size: 2rem;
+  font-size: 1rem;
   background: none;
   border: 1px solid lightgray;
   outline: none;
