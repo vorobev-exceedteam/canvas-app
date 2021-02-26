@@ -20,7 +20,6 @@ class CanvasItemHistory {
         itemsStates.set(id, item.getState());
       }
     }
-    console.log(itemsStates);
     this._history.push(itemsStates);
   }
 
