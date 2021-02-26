@@ -44,8 +44,10 @@ Example of json file with custom items
 ```
 
 
-# What is implemented
+# Features that have been implemented
 * Import and export of objects
 * Moving objects with a mouse (click and drag)
-* All object is selectable through CTRL+Click (hold CTRL+Click to move selected objects around)
+* All objects are selectable through `CTRL+CLICK` (hold `CTRL+CLICK` to move selected objects around)
+* Feature to delete selected objects (select items and then press the `DELETE` button)
+* Persistence of the canvas state in a browser's local storage (click the `Save As Default` button, to save current state of objects)
 * History module (you can undo your changes and reset to initial state)
